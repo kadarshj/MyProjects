@@ -1,0 +1,94 @@
+{% extends 'basedash.html' %}
+{% block title %}Events List{% endblock %}
+{% comment %}{% block albums_active %}active{% endblock %} {% endcomment %}
+
+{% block body %}
+<div class="container-fluid">
+
+    <div class="row">
+
+        <div class="col-sm-12 col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="page-header"><h3 class="headstyle text-center">Event Details</h3></div>
+
+                    <table id="myTable" class="table table-striped" >
+        <thead>
+          <tr>
+            <th></th>
+            <th>Events</th>
+            <th>Description</th>
+            <th>Price</th>
+            <th>Total Seats</th>
+            <th>Event Date</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+        {% if eventlist %}
+            {% for eventlist in eventlist %}
+          <tr>
+            <td><img style="border-radius: 50%;width: 25px;" src="{{ eventlist.cover_logo.url }}" class="img-responsive"></td>
+            <td>{{ eventlist.events_type }}</td>
+            <td>{{ eventlist.description }}</td>
+
+          {% if eventlist.eventdate == today %}
+            <td>₹&nbsp;{{ eventlist.price|add:150 }}</td>
+           {% elif eventlist.total_seats|divisibleby:2 > eventlist.left_seats %}
+            <td>₹&nbsp;{{ eventlist.price|add:100 }}</td>
+           {% elif eventlist.left_seats < 10 %}
+              <td>₹&nbsp;{{ eventlist.price|add:200 }}</td>
+            {% else %}
+              <td>₹&nbsp;{{ eventlist.price }}</td>
+            {% endif %}
+
+            <td>&nbsp;<i class="fa fa-wheelchair"></i>&nbsp;{{ eventlist.total_seats }}</td>
+            <td>{{ eventlist.eventdate }}</td>
+            <td>
+                <form method="post" action="{% url 'book' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="total_seats" value="{{ eventlist.total_seats }}"/>
+
+
+                    {% if eventlist.eventdate == today %}
+                        <input type="hidden" name="price" value="{{ eventlist.price|add:150 }}"/>
+           {% elif eventlist.total_seats|divisibleby:2 > eventlist.left_seats %}
+                        <input type="hidden" name="price" value="{{ eventlist.price|add:100 }}"/>
+           {% elif eventlist.left_seats < 10 %}
+                        <input type="hidden" name="price" value="{{ eventlist.price|add:200 }}"/>
+            {% else %}
+              <input type="hidden" name="price" value="{{ eventlist.price }}"/>
+            {% endif %}
+
+                        <input type="hidden" name="events_id" value="{{ eventlist.id }}"/>
+                        <input type="hidden" name="booked_seats" value="{{ eventlist.booked_seats }}"/>
+                        <button type="submit" class="btn-danger">Book</button>
+                </form>
+            </td>
+          </tr>
+           {% endfor %}
+        {% else %}
+        <div class="col-sm-12">
+            <h1>No Event is Added!</h1>
+            </div>
+        {% endif %}
+        </tbody>
+      </table>
+
+
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+</div>
+{% endblock %}
+{% block filezone %}
+    <script>
+$(document).ready(function(){
+    $('#myTable').dataTable();
+});
+</script>
+{% endblock %}
